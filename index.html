@@ -3,42 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CivicFix — Enterprise Municipal Drainage & Sewage Portal</title>
+    <title>CivicFix — Municipal Sewage & Drainage Grievance Portal</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
         :root {
             --primary: #0284c7;
             --primary-dark: #0369a1;
-            --primary-light: #e0f2fe;
+            --primary-gradient: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
             --accent: #f59e0b;
             --danger: #ef4444;
             --success: #10b981;
-            --bg-main: #f8fafc;
-            --bg-card: #ffffff;
+            --bg-main: #f1f5f9;
+            --bg-card: rgba(255, 255, 255, 0.9);
             --text-main: #0f172a;
             --text-muted: #64748b;
-            --border: #e2e8f0;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
-            --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
-            --shadow-lg: 0 20px 35px -10px rgba(2, 132, 199, 0.15);
-            --radius: 14px;
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --border: #cbd5e1;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.02);
+            --shadow-md: 0 12px 28px -6px rgba(15, 23, 42, 0.08);
+            --shadow-lg: 0 20px 40px -12px rgba(2, 132, 199, 0.22);
+            --radius: 16px;
+            --transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         [data-theme="dark"] {
-            --bg-main: #0b0f19;
-            --bg-card: #131b2e;
+            --bg-main: #090d16;
+            --bg-card: rgba(19, 27, 46, 0.85);
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
             --border: #1e293b;
-            --primary-light: #1e3a8a;
-            --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 12px 28px -6px rgba(0, 0, 0, 0.4);
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
         }
 
         body {
@@ -46,23 +47,28 @@
             color: var(--text-main);
             line-height: 1.6;
             transition: var(--transition);
+            min-height: 100vh;
         }
 
-        /* Glassmorphism Navbar */
+        /* Glassmorphism Header */
         header {
-            background: rgba(var(--bg-card), 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border-bottom: 1px solid var(--border);
             position: sticky;
             top: 0;
             z-index: 100;
         }
 
+        [data-theme="dark"] header {
+            background: rgba(15, 23, 42, 0.75);
+        }
+
         .navbar {
             max-width: 1280px;
             margin: 0 auto;
-            padding: 0.9rem 2rem;
+            padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -80,31 +86,35 @@
         }
 
         .brand-icon {
-            width: 42px;
-            height: 42px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            width: 44px;
+            height: 44px;
+            background: var(--primary-gradient);
             color: white;
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.25rem;
-            box-shadow: var(--shadow-lg);
+            font-size: 1.3rem;
+            box-shadow: 0 8px 18px rgba(2, 132, 199, 0.35);
         }
 
         .nav-links {
             display: flex;
             gap: 6px;
             list-style: none;
-            background: var(--bg-main);
-            padding: 4px;
-            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.04);
+            padding: 5px;
+            border-radius: 14px;
             border: 1px solid var(--border);
         }
 
+        [data-theme="dark"] .nav-links {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
         .nav-btn {
-            padding: 0.55rem 1.1rem;
-            border-radius: 9px;
+            padding: 0.6rem 1.2rem;
+            border-radius: 10px;
             border: none;
             background: transparent;
             color: var(--text-muted);
@@ -127,20 +137,21 @@
         .theme-toggle {
             background: var(--bg-card);
             border: 1px solid var(--border);
-            padding: 8px 14px;
-            border-radius: 10px;
+            padding: 9px 16px;
+            border-radius: 12px;
             cursor: pointer;
             color: var(--text-main);
             display: flex;
             align-items: center;
             gap: 8px;
             font-size: 0.85rem;
-            font-weight: 600;
+            font-weight: 700;
             transition: var(--transition);
         }
 
         .theme-toggle:hover {
             border-color: var(--primary);
+            transform: translateY(-1px);
         }
 
         /* Container Layout */
@@ -153,8 +164,8 @@
         .page-view {
             display: none;
             opacity: 0;
-            transform: translateY(12px);
-            transition: opacity 0.35s ease, transform 0.35s ease;
+            transform: translateY(16px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
         }
 
         .page-view.active {
@@ -163,7 +174,7 @@
             transform: translateY(0);
         }
 
-        /* Card Elements */
+        /* Elevated Card Layouts */
         .card {
             background: var(--bg-card);
             border: 1px solid var(--border);
@@ -171,6 +182,7 @@
             padding: 2.5rem;
             box-shadow: var(--shadow-md);
             margin-bottom: 2rem;
+            backdrop-filter: blur(12px);
             transition: var(--transition);
         }
 
@@ -180,32 +192,33 @@
 
         /* Hero Banner */
         .hero {
-            background: linear-gradient(135deg, #0284c7 0%, #0369a1 50%, #0f172a 100%);
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 60%, #0f172a 100%);
             color: white;
             border-radius: var(--radius);
-            padding: 4rem 2.5rem;
+            padding: 4.5rem 3rem;
             text-align: center;
             margin-bottom: 2.5rem;
-            box-shadow: 0 20px 40px rgba(2, 132, 199, 0.2);
+            box-shadow: 0 20px 45px rgba(2, 132, 199, 0.25);
             position: relative;
             overflow: hidden;
         }
 
-        .hero::after {
-            content: '';
-            position: absolute;
-            width: 300px;
-            height: 300px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 50%;
-            top: -100px;
-            right: -100px;
+        .hero h1 {
+            font-size: 2.8rem;
+            margin-bottom: 1.2rem;
+            font-weight: 800;
+            letter-spacing: -1px;
         }
 
-        .hero h1 { font-size: 2.6rem; margin-bottom: 1rem; font-weight: 800; letter-spacing: -1px; }
-        .hero p { opacity: 0.9; max-width: 700px; margin: 0 auto 2rem auto; font-size: 1.1rem; line-height: 1.7; }
+        .hero p {
+            opacity: 0.92;
+            max-width: 720px;
+            margin: 0 auto 2.2rem auto;
+            font-size: 1.15rem;
+            line-height: 1.7;
+        }
 
-        /* Form Layouts */
+        /* Form Controls */
         .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -220,14 +233,16 @@
         }
 
         .form-group label {
-            font-weight: 600;
-            font-size: 0.9rem;
+            font-weight: 700;
+            font-size: 0.88rem;
             color: var(--text-main);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .form-control {
-            padding: 0.85rem 1.1rem;
-            border-radius: 10px;
+            padding: 0.9rem 1.1rem;
+            border-radius: 12px;
             border: 1px solid var(--border);
             background: var(--bg-main);
             color: var(--text-main);
@@ -238,15 +253,15 @@
 
         .form-control:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.12);
+            box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.15);
             background: var(--bg-card);
         }
 
         .btn {
-            padding: 0.85rem 2rem;
-            border-radius: 10px;
+            padding: 0.9rem 2.2rem;
+            border-radius: 12px;
             border: none;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
             transition: var(--transition);
             display: inline-flex;
@@ -256,41 +271,63 @@
             font-size: 0.95rem;
         }
 
-        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3); }
-        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
-        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); }
-        .btn-outline:hover { background: var(--bg-main); border-color: var(--primary); color: var(--primary); }
-        .btn-danger { background: var(--danger); color: white; }
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: 0 6px 18px rgba(2, 132, 199, 0.35);
+        }
 
-        /* Badges */
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(2, 132, 199, 0.45);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+        }
+
+        .btn-outline:hover {
+            background: rgba(0,0,0,0.03);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        /* Status Badges */
         .badge {
-            padding: 5px 12px;
-            border-radius: 20px;
+            padding: 6px 14px;
+            border-radius: 30px;
             font-size: 0.75rem;
-            font-weight: 700;
+            font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.6px;
             display: inline-block;
         }
 
-        .badge-submitted { background: rgba(245, 158, 11, 0.15); color: #d97706; }
-        .badge-review { background: rgba(2, 132, 199, 0.15); color: #0284c7; }
-        .badge-inprogress { background: rgba(99, 102, 241, 0.15); color: #6366f1; }
-        .badge-resolved { background: rgba(16, 185, 129, 0.15); color: #059669; }
-        .badge-emergency { background: rgba(239, 68, 68, 0.15); color: #dc2626; }
+        .badge-submitted { background: rgba(245, 158, 11, 0.15); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .badge-review { background: rgba(2, 132, 199, 0.15); color: #0284c7; border: 1px solid rgba(2, 132, 199, 0.3); }
+        .badge-inprogress { background: rgba(99, 102, 241, 0.15); color: #6366f1; border: 1px solid rgba(99, 102, 241, 0.3); }
+        .badge-resolved { background: rgba(16, 185, 129, 0.15); color: #059669; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .badge-emergency { background: rgba(239, 68, 68, 0.15); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.3); }
 
         /* Timeline Tracker */
         .timeline {
             display: flex;
             justify-content: space-between;
             position: relative;
-            margin: 3rem 0;
+            margin: 3.5rem 0;
         }
 
         .timeline::before {
             content: '';
             position: absolute;
-            top: 22px;
+            top: 24px;
             left: 10%;
             right: 10%;
             height: 4px;
@@ -308,16 +345,16 @@
         }
 
         .timeline-icon {
-            width: 45px;
-            height: 45px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
             background: var(--bg-main);
             border: 3px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 10px auto;
-            font-weight: 700;
+            margin: 0 auto 12px auto;
+            font-weight: 800;
             color: var(--text-muted);
             transition: var(--transition);
         }
@@ -325,14 +362,14 @@
         .timeline-step.active .timeline-icon {
             background: var(--primary);
             color: white;
-            border-color: var(--primary-light);
-            box-shadow: 0 0 15px rgba(2, 132, 199, 0.4);
+            border-color: rgba(2, 132, 199, 0.4);
+            box-shadow: 0 0 20px rgba(2, 132, 199, 0.5);
         }
 
-        /* Metrics Grid */
+        /* Metric Cards */
         .metrics-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2.5rem;
         }
@@ -340,7 +377,7 @@
         .metric-card {
             background: var(--bg-card);
             border: 1px solid var(--border);
-            padding: 2rem;
+            padding: 2.2rem;
             border-radius: var(--radius);
             text-align: center;
             box-shadow: var(--shadow-sm);
@@ -348,21 +385,23 @@
         }
 
         .metric-card:hover {
-            transform: translateY(-3px);
+            transform: translateY(-4px);
             box-shadow: var(--shadow-md);
         }
 
         .metric-value {
-            font-size: 2.5rem;
+            font-size: 2.8rem;
             font-weight: 800;
             color: var(--primary);
             margin: 0.5rem 0 0.2rem 0;
-            letter-spacing: -1px;
+            letter-spacing: -1.5px;
         }
 
-        /* Tables */
+        /* Custom Detailed Table */
         .table-responsive {
             overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid var(--border);
         }
 
         table {
@@ -370,32 +409,48 @@
             border-collapse: separate;
             border-spacing: 0;
             text-align: left;
-            font-size: 0.95rem;
+            font-size: 0.92rem;
         }
 
         th, td {
-            padding: 1rem 1.2rem;
+            padding: 1.1rem 1.3rem;
             border-bottom: 1px solid var(--border);
         }
 
         th {
-            background: var(--bg-main);
-            font-weight: 700;
+            background: rgba(0, 0, 0, 0.02);
+            font-weight: 800;
             color: var(--text-muted);
             text-transform: uppercase;
             font-size: 0.75rem;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.7px;
         }
 
-        tr:hover td { background: rgba(2, 132, 199, 0.02); }
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: rgba(2, 132, 199, 0.03);
+        }
+
+        /* Detailed Admin Row View */
+        .detail-box {
+            background: var(--bg-main);
+            padding: 1rem;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            margin-top: 6px;
+            border: 1px solid var(--border);
+        }
 
         /* Modals */
         .modal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(5px);
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(8px);
             align-items: center;
             justify-content: center;
             z-index: 1000;
@@ -407,25 +462,25 @@
             background: var(--bg-card);
             padding: 2.5rem;
             border-radius: var(--radius);
-            max-width: 480px;
+            max-width: 520px;
             width: 90%;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
-            animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3);
+            animation: modalPop 0.35s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         @keyframes modalPop {
-            0% { transform: scale(0.9); opacity: 0; }
+            0% { transform: scale(0.92); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
         }
     </style>
 </head>
 <body data-theme="light">
 
-    <!-- Navbar -->
+    <!-- Header Navigation -->
     <header>
         <div class="navbar">
             <a href="#" class="brand">
-                <div class="brand-icon">⚡</div>
+                <div class="brand-icon">⚙</div>
                 CivicFix Portal
             </a>
             <ul class="nav-links">
@@ -433,7 +488,7 @@
                 <li><button class="nav-btn" onclick="switchView('reportView', this)">Register Issue</button></li>
                 <li><button class="nav-btn" onclick="switchView('trackView', this)">Track Status</button></li>
                 <li><button class="nav-btn" onclick="switchView('analyticsView', this)">Ward Analytics</button></li>
-                <li><button class="nav-btn" onclick="switchView('adminView', this)">Admin Login</button></li>
+                <li><button class="nav-btn" onclick="switchView('adminView', this)">Admin Portal</button></li>
             </ul>
             <button class="theme-toggle" onclick="toggleTheme()">🌙 Theme</button>
         </div>
@@ -444,44 +499,44 @@
         <!-- HOME VIEW -->
         <div id="homeView" class="page-view active">
             <div class="hero">
-                <h1>Smart Ward Drainage & Sewage Grievance Portal</h1>
-                <p>An offline-first, zero-barrier civic utility empowering municipal residents to log, monitor, and resolve drainage emergencies with absolute transparency and speed.</p>
+                <h1>Municipal Sewage & Drainage Management</h1>
+                <p>An offline-first, zero-bandwidth civic management portal empowering municipal ward residents to log, track, and audit drainage grievances with complete official accountability.</p>
                 <div style="display: flex; gap: 1rem; justify-content: center;">
                     <button class="btn btn-primary" style="background: white; color: var(--primary);" onclick="switchView('reportView', document.querySelectorAll('.nav-btn')[1])">Report Overflow Issue</button>
-                    <button class="btn btn-outline" style="color: white; border-color: rgba(255,255,255,0.4);" onclick="switchView('trackView', document.querySelectorAll('.nav-btn')[2])">Track Complaint ID</button>
+                    <button class="btn btn-outline" style="color: white; border-color: rgba(255,255,255,0.4);" onclick="switchView('trackView', document.querySelectorAll('.nav-btn')[2])">Track Complaint Status</button>
                 </div>
             </div>
 
             <div class="metrics-grid">
                 <div class="metric-card">
-                    <div class="text-muted" style="font-size:0.85rem; font-weight:700;">TOTAL COMPLAINTS</div>
+                    <div class="text-muted" style="font-size:0.8rem; font-weight:800;">TOTAL REGISTERED COMPLAINTS</div>
                     <div class="metric-value" id="homeTotalCount">0</div>
-                    <div style="font-size:0.8rem; color:var(--text-muted);">Active municipal registers</div>
+                    <div style="font-size:0.85rem; color:var(--text-muted);">Across Ward 1–25</div>
                 </div>
                 <div class="metric-card">
-                    <div class="text-muted" style="font-size:0.85rem; font-weight:700;">RESOLVED ISSUES</div>
+                    <div class="text-muted" style="font-size:0.8rem; font-weight:800;">VERIFIED RESOLVED ISSUES</div>
                     <div class="metric-value" style="color:var(--success);" id="homeResolvedCount">0</div>
-                    <div style="font-size:0.8rem; color:var(--text-muted);">Verified resolved cases</div>
+                    <div style="font-size:0.85rem; color:var(--text-muted);">Community audited</div>
                 </div>
                 <div class="metric-card">
-                    <div class="text-muted" style="font-size:0.85rem; font-weight:700;">AVG RESOLUTION TIME</div>
+                    <div class="text-muted" style="font-size:0.8rem; font-weight:800;">AVERAGE RESOLUTION TIME</div>
                     <div class="metric-value" style="color:var(--accent);">18.4 hrs</div>
-                    <div style="font-size:0.8rem; color:var(--text-muted);">Ward response benchmark</div>
+                    <div style="font-size:0.85rem; color:var(--text-muted);">Ward response benchmark</div>
                 </div>
             </div>
         </div>
 
-        <!-- REPORT VIEW -->
+        <!-- REGISTRATION FORM VIEW -->
         <div id="reportView" class="page-view">
             <div class="card">
-                <h2 style="margin-bottom: 0.5rem; font-weight: 800;">Log Sewage / Drainage Complaint</h2>
-                <p class="text-muted" style="margin-bottom: 2rem; font-size: 0.95rem;">Complete the incident report below to instantly generate your municipal tracking ID.</p>
+                <h2 style="margin-bottom: 0.5rem; font-weight: 800;">Log Sewage / Drainage Grievance</h2>
+                <p class="text-muted" style="margin-bottom: 2rem; font-size: 0.95rem;">Provide accurate local details to generate a unique municipal tracking record.</p>
                 
                 <form id="grievanceForm" onsubmit="handleFormSubmit(event)">
                     <div class="form-grid">
                         <div class="form-group">
                             <label>Resident Full Name *</label>
-                            <input type="text" id="citizenName" class="form-control" placeholder="e.g. Avinash Joseph Keje" required>
+                            <input type="text" id="citizenName" class="form-control" placeholder="Enter full name" required>
                         </div>
                         <div class="form-group">
                             <label>Mobile Number *</label>
@@ -516,19 +571,19 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Landmark / Specific Location *</label>
-                            <input type="text" id="landmark" class="form-control" placeholder="e.g. Near CSMSS Main Gate" required>
+                            <label>Landmark / House Address *</label>
+                            <input type="text" id="landmark" class="form-control" placeholder="e.g. Near CSMSS Gate 2, House #42" required>
                         </div>
                     </div>
                     
                     <div class="form-group" style="margin-bottom: 2rem;">
-                        <label>Issue Description</label>
-                        <textarea id="description" class="form-control" rows="3" placeholder="Describe the severity, water overflow volume, or blockage details..."></textarea>
+                        <label>Detailed Issue Description</label>
+                        <textarea id="description" class="form-control" rows="3" placeholder="Describe the sewage overflow volume, blockage cause, or health hazard..."></textarea>
                     </div>
 
                     <div style="display: flex; gap: 12px;">
-                        <button type="submit" class="btn btn-primary">Submit Grievance Report</button>
-                        <button type="button" class="btn btn-outline" onclick="loadSampleData()">Load Demo Data</button>
+                        <button type="submit" class="btn btn-primary">Submit Grievance</button>
+                        <button type="button" class="btn btn-outline" onclick="loadSampleData()">Load Demo Complaint</button>
                     </div>
                 </form>
             </div>
@@ -538,7 +593,7 @@
         <div id="trackView" class="page-view">
             <div class="card">
                 <h2 style="margin-bottom: 0.5rem; font-weight: 800;">Track Grievance Status</h2>
-                <p class="text-muted" style="margin-bottom: 2rem; font-size: 0.95rem;">Enter your unique Complaint ID or 10-digit registered mobile number.</p>
+                <p class="text-muted" style="margin-bottom: 2rem; font-size: 0.95rem;">Enter your unique Complaint ID or 10-digit mobile number.</p>
                 
                 <div style="display: flex; gap: 12px; max-width: 550px; margin-bottom: 2.5rem;">
                     <input type="text" id="trackSearchInput" class="form-control" placeholder="e.g. SEW-2026-1001">
@@ -548,7 +603,7 @@
                 <div id="trackResultContainer" style="display: none;">
                     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 1.2rem;">
                         <div>
-                            <h3 id="trackResultID" style="font-size: 1.3rem; font-weight: 800;">SEW-2026-1001</h3>
+                            <h3 id="trackResultID" style="font-size: 1.35rem; font-weight: 800;">SEW-2026-1001</h3>
                             <span class="text-muted" id="trackResultCategory">Overflowing Sewage Line</span>
                         </div>
                         <div id="trackResultBadge"><span class="badge badge-submitted">Submitted</span></div>
@@ -573,21 +628,21 @@
                         </div>
                     </div>
 
-                    <div style="background: var(--bg-main); padding: 1.5rem; border-radius: 10px; font-size:0.95rem; border: 1px solid var(--border);">
+                    <div style="background: var(--bg-main); padding: 1.5rem; border-radius: 12px; font-size:0.95rem; border: 1px solid var(--border);">
                         <p style="margin-bottom: 8px;"><strong>Resident Name:</strong> <span id="trackResultName">-</span></p>
                         <p style="margin-bottom: 8px;"><strong>Ward Zone:</strong> <span id="trackResultWard">-</span></p>
-                        <p style="margin-bottom: 8px;"><strong>Landmark:</strong> <span id="trackResultLandmark">-</span></p>
-                        <p><strong>Officer Remarks:</strong> <span id="trackResultRemarks" style="color:var(--primary); font-weight:600;">Awaiting municipal dispatch.</span></p>
+                        <p style="margin-bottom: 8px;"><strong>Landmark / Address:</strong> <span id="trackResultLandmark">-</span></p>
+                        <p><strong>Official Remarks:</strong> <span id="trackResultRemarks" style="color:var(--primary); font-weight:700;">Awaiting officer assignment.</span></p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- ANALYTICS VIEW -->
+        <!-- WARD ANALYTICS VIEW -->
         <div id="analyticsView" class="page-view">
             <div class="card">
                 <h2 style="margin-bottom: 0.5rem; font-weight: 800;">Ward-wise Grievance Analytics</h2>
-                <p class="text-muted" style="margin-bottom: 2rem; font-size: 0.95rem;">Real-time performance analytics compiled from local browser storage audit logs.</p>
+                <p class="text-muted" style="margin-bottom: 2rem; font-size: 0.95rem;">Real-time ward audit compiled directly from offline local data logs.</p>
                 
                 <div class="table-responsive">
                     <table>
@@ -600,34 +655,36 @@
                             </tr>
                         </thead>
                         <tbody id="analyticsTableBody">
-                            <!-- Populated via JS -->
+                            <!-- JS Generated -->
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
 
-        <!-- ADMIN VIEW -->
+        <!-- ADMIN PORTAL VIEW -->
         <div id="adminView" class="page-view">
+            <!-- Login State (No Exposed Default Passwords) -->
             <div id="adminLoginForm" class="card" style="max-width: 420px; margin: 3rem auto;">
-                <h3 style="margin-bottom: 0.5rem; font-weight: 800;">Municipal Admin Login</h3>
-                <p class="text-muted" style="margin-bottom: 2rem; font-size: 0.9rem;">Secure access portal for authorized Ward Engineers.</p>
+                <h3 style="margin-bottom: 0.5rem; font-weight: 800;">Municipal Officer Login</h3>
+                <p class="text-muted" style="margin-bottom: 2rem; font-size: 0.88rem;">Authorized access for Ward Executive Engineers & Maintenance Staff.</p>
                 <div class="form-group" style="margin-bottom: 1.2rem;">
                     <label>Username</label>
-                    <input type="text" id="adminUser" class="form-control" placeholder="Default: admin">
+                    <input type="text" id="adminUser" class="form-control" placeholder="Enter municipal ID">
                 </div>
                 <div class="form-group" style="margin-bottom: 2rem;">
                     <label>Password</label>
-                    <input type="password" id="adminPass" class="form-control" placeholder="Default: admin123">
+                    <input type="password" id="adminPass" class="form-control" placeholder="••••••••">
                 </div>
                 <button class="btn btn-primary" style="width: 100%;" onclick="loginAdmin()">Authorize Access</button>
             </div>
 
+            <!-- Detailed Admin Dashboard -->
             <div id="adminDashboard" style="display: none;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                     <div>
                         <h2 style="font-weight: 800;">Ward Officer Management Console</h2>
-                        <p class="text-muted" style="font-size: 0.9rem;">Manage incoming grievances and update resolution workflows.</p>
+                        <p class="text-muted" style="font-size: 0.9rem;">Complete access to resident grievances, full contact records, and status updates.</p>
                     </div>
                     <button class="btn btn-danger" onclick="logoutAdmin()">Logout Console</button>
                 </div>
@@ -637,17 +694,17 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th>ID</th>
-                                    <th>Citizen</th>
-                                    <th>Ward Zone</th>
-                                    <th>Category</th>
-                                    <th>Severity</th>
+                                    <th>ID / Date</th>
+                                    <th>Resident Contact</th>
+                                    <th>Ward & Location</th>
+                                    <th>Category & Severity</th>
+                                    <th>Detailed Issue Description</th>
                                     <th>Status</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody id="adminTableBody">
-                                <!-- Populated via JS -->
+                                <!-- Detailed Rows Generated via JS -->
                             </tbody>
                         </table>
                     </div>
@@ -660,11 +717,11 @@
     <!-- Status Update Modal -->
     <div id="statusModal" class="modal">
         <div class="modal-content">
-            <h3 style="margin-bottom: 0.5rem; font-weight: 800;">Update Grievance Status</h3>
+            <h3 style="margin-bottom: 0.5rem; font-weight: 800;">Update Complaint Status</h3>
             <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:1.5rem;" id="modalComplaintID">ID: SEW-1001</p>
             
             <div class="form-group" style="margin-bottom: 1.2rem;">
-                <label>Select Status Progression</label>
+                <label>Status Progression</label>
                 <select id="modalStatusSelect" class="form-control">
                     <option value="Submitted">Submitted</option>
                     <option value="Under Review">Under Review</option>
@@ -675,7 +732,7 @@
 
             <div class="form-group" style="margin-bottom: 2rem;">
                 <label>Officer Action Remarks</label>
-                <input type="text" id="modalRemarksInput" class="form-control" placeholder="e.g. Suction tanker and crew dispatched.">
+                <input type="text" id="modalRemarksInput" class="form-control" placeholder="e.g. Suction vehicle and repair crew dispatched.">
             </div>
 
             <div style="display: flex; gap: 10px; justify-content: flex-end;">
@@ -690,8 +747,8 @@
         let currentAdminID = null;
 
         const defaultGrievances = [
-            { id: 'SEW-2026-1001', name: 'Kedar Khakre', mobile: '9876543210', ward: 'Ward 01 - Kanchanwadi', category: 'Overflowing Sewage Line', severity: 'Emergency', landmark: 'Near College Main Gate', description: 'Drainage overflowing across primary road.', status: 'Submitted', remarks: 'Awaiting municipal team assignment.', date: '2026-10-10' },
-            { id: 'SEW-2026-1002', name: 'Digvijay Kolhe', mobile: '9123456789', ward: 'Ward 03 - CIDCO Sector A', category: 'Broken/Missing Manhole Cover', severity: 'High', landmark: 'Opposite Shopping Complex', description: 'Open manhole posing severe hazard.', status: 'In Progress', remarks: 'Replacement lid dispatched.', date: '2026-10-09' }
+            { id: 'SEW-2026-1001', name: 'Kedar Khakre', mobile: '9876543210', ward: 'Ward 01 - Kanchanwadi', category: 'Overflowing Sewage Line', severity: 'Emergency', landmark: 'Near CSMSS Main Gate, Lane 3', description: 'Severe sewage overflow spreading across the primary access road. Poses health hazard to students and residents.', status: 'Submitted', remarks: 'Awaiting municipal team assignment.', date: '2026-10-10' },
+            { id: 'SEW-2026-1002', name: 'Digvijay Kolhe', mobile: '9123456789', ward: 'Ward 03 - CIDCO Sector A', category: 'Broken/Missing Manhole Cover', severity: 'High', landmark: 'Opposite Shopping Complex, House #14', description: 'Heavy cast-iron manhole cover broken after rain. Open pit on main street posing immediate accident risk.', status: 'In Progress', remarks: 'Replacement lid dispatched via Ward 3 team.', date: '2026-10-09' }
         ];
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -743,9 +800,9 @@
                 category: document.getElementById('issueCategory').value,
                 severity: document.getElementById('severityLevel').value,
                 landmark: document.getElementById('landmark').value,
-                description: document.getElementById('description').value,
+                description: document.getElementById('description').value || 'No description provided.',
                 status: 'Submitted',
-                remarks: 'Grievance successfully registered in queue.',
+                remarks: 'Grievance registered in municipal queue.',
                 date: new Date().toISOString().split('T')[0]
             };
 
@@ -766,7 +823,7 @@
             document.getElementById('wardNumber').value = "Ward 01 - Kanchanwadi";
             document.getElementById('issueCategory').value = "Overflowing Sewage Line";
             document.getElementById('severityLevel').value = "Emergency";
-            document.getElementById('landmark').value = "CSMSS Hostel Block C Road";
+            document.getElementById('landmark').value = "CSMSS Hostel Block C Road, Plot 12";
             document.getElementById('description').value = "Severe drainage overflow across residential lane leading to foul odor and hygiene risk.";
         }
 
@@ -838,11 +895,12 @@
             const u = document.getElementById('adminUser').value;
             const p = document.getElementById('adminPass').value;
 
-            if ((u === 'admin' && p === 'admin123') || u === 'officer') {
+            // Authentication Credentials
+            if ((u === 'admin' && p === 'admin123') || (u === 'officer' && p === 'ward2026')) {
                 localStorage.setItem('civicfix_admin_logged', 'true');
                 showAdminDashboard();
             } else {
-                alert('Invalid Credentials! Use default: admin / admin123');
+                alert('Access Denied: Invalid Credentials.');
             }
         }
 
@@ -858,21 +916,48 @@
             renderAdminTable();
         }
 
+        // Detailed Admin Table Renderer
         function renderAdminTable() {
             const data = getData();
             const tbody = document.getElementById('adminTableBody');
             tbody.innerHTML = '';
 
+            if(data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No grievance complaints registered in database.</td></tr>';
+                return;
+            }
+
             data.forEach(item => {
                 tbody.innerHTML += `
                     <tr>
-                        <td><strong>${item.id}</strong></td>
-                        <td>${item.name}<br><small class="text-muted">${item.mobile}</small></td>
-                        <td>${item.ward}</td>
-                        <td>${item.category}</td>
-                        <td><span class="badge ${item.severity === 'Emergency' ? 'badge-emergency' : 'badge-submitted'}">${item.severity}</span></td>
-                        <td><span class="badge badge-${item.status.toLowerCase().replace(' ', '')}">${item.status}</span></td>
-                        <td><button class="btn btn-outline" style="padding:5px 10px; font-size:0.8rem;" onclick="openStatusModal('${item.id}')">Update</button></td>
+                        <td>
+                            <strong>${item.id}</strong><br>
+                            <small class="text-muted">${item.date || '2026-10-10'}</small>
+                        </td>
+                        <td>
+                            <strong>${item.name}</strong><br>
+                            <span style="color:var(--primary); font-size:0.85rem;">📞 ${item.mobile}</span>
+                        </td>
+                        <td>
+                            <strong>${item.ward}</strong><br>
+                            <small class="text-muted">📍 ${item.landmark}</small>
+                        </td>
+                        <td>
+                            ${item.category}<br>
+                            <span class="badge ${item.severity === 'Emergency' ? 'badge-emergency' : 'badge-submitted'}" style="margin-top:4px;">${item.severity}</span>
+                        </td>
+                        <td>
+                            <div class="detail-box">
+                                ${item.description}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge badge-${item.status.toLowerCase().replace(' ', '')}">${item.status}</span><br>
+                            <small class="text-muted" style="display:block; margin-top:4px;">${item.remarks}</small>
+                        </td>
+                        <td>
+                            <button class="btn btn-outline" style="padding:6px 12px; font-size:0.8rem;" onclick="openStatusModal('${item.id}')">Update</button>
+                        </td>
                     </tr>
                 `;
             });
@@ -880,7 +965,7 @@
 
         function openStatusModal(id) {
             currentAdminID = id;
-            document.getElementById('modalComplaintID').innerText = `ID: ${id}`;
+            document.getElementById('modalComplaintID').innerText = `Complaint ID: ${id}`;
             document.getElementById('statusModal').classList.add('active');
         }
 
