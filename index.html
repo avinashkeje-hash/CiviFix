@@ -174,7 +174,7 @@
             transform: translateY(0);
         }
 
-        /* Elevated Card Layouts */
+        /* Cards */
         .card {
             background: var(--bg-card);
             border: 1px solid var(--border);
@@ -366,7 +366,7 @@
             box-shadow: 0 0 20px rgba(2, 132, 199, 0.5);
         }
 
-        /* Metric Cards */
+        /* Metrics */
         .metrics-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -397,7 +397,7 @@
             letter-spacing: -1.5px;
         }
 
-        /* Custom Detailed Table */
+        /* Detailed Table */
         .table-responsive {
             overflow-x: auto;
             border-radius: 12px;
@@ -426,15 +426,9 @@
             letter-spacing: 0.7px;
         }
 
-        tr:last-child td {
-            border-bottom: none;
-        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(2, 132, 199, 0.03); }
 
-        tr:hover td {
-            background: rgba(2, 132, 199, 0.03);
-        }
-
-        /* Detailed Admin Row View */
         .detail-box {
             background: var(--bg-main);
             padding: 1rem;
@@ -444,7 +438,6 @@
             border: 1px solid var(--border);
         }
 
-        /* Modals */
         .modal {
             display: none;
             position: fixed;
@@ -526,11 +519,11 @@
             </div>
         </div>
 
-        <!-- REGISTRATION FORM VIEW -->
+        <!-- REGISTRATION FORM VIEW WITH OTP -->
         <div id="reportView" class="page-view">
             <div class="card">
                 <h2 style="margin-bottom: 0.5rem; font-weight: 800;">Log Sewage / Drainage Grievance</h2>
-                <p class="text-muted" style="margin-bottom: 2rem; font-size: 0.95rem;">Provide accurate local details to generate a unique municipal tracking record.</p>
+                <p class="text-muted" style="margin-bottom: 2rem; font-size: 0.95rem;">Provide accurate local details and verify mobile number via OTP to generate a tracking record.</p>
                 
                 <form id="grievanceForm" onsubmit="handleFormSubmit(event)">
                     <div class="form-grid">
@@ -538,10 +531,25 @@
                             <label>Resident Full Name *</label>
                             <input type="text" id="citizenName" class="form-control" placeholder="Enter full name" required>
                         </div>
+
+                        <!-- Mobile & OTP Section -->
                         <div class="form-group">
                             <label>Mobile Number *</label>
-                            <input type="tel" id="citizenMobile" class="form-control" placeholder="10-digit phone number" pattern="[0-9]{10}" required>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="tel" id="citizenMobile" class="form-control" placeholder="10-digit phone number" pattern="[0-9]{10}" required style="flex:1;">
+                                <button type="button" class="btn btn-outline" style="padding: 0 1rem; font-size: 0.85rem;" onclick="sendOTP()">Send OTP</button>
+                            </div>
                         </div>
+
+                        <div class="form-group" id="otpGroup" style="display:none;">
+                            <label>Enter 4-Digit OTP *</label>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" id="otpInput" class="form-control" placeholder="Enter OTP" maxlength="4" style="flex:1;">
+                                <button type="button" class="btn btn-primary" style="padding: 0 1rem; font-size: 0.85rem;" onclick="verifyOTP()">Verify OTP</button>
+                            </div>
+                            <small id="otpStatus" style="font-size: 0.8rem; margin-top: 4px;"></small>
+                        </div>
+
                         <div class="form-group">
                             <label>Municipal Ward Zone *</label>
                             <select id="wardNumber" class="form-control" required>
@@ -553,6 +561,7 @@
                                 <option value="Ward 05 - Campus Quarter">Ward 05 - Campus Quarter</option>
                             </select>
                         </div>
+
                         <div class="form-group">
                             <label>Grievance Category *</label>
                             <select id="issueCategory" class="form-control" required>
@@ -562,6 +571,7 @@
                                 <option value="Pipeline Leakage / Contamination">Pipeline Leakage / Contamination</option>
                             </select>
                         </div>
+
                         <div class="form-group">
                             <label>Severity Level</label>
                             <select id="severityLevel" class="form-control">
@@ -570,6 +580,7 @@
                                 <option value="Emergency">Emergency (Contamination Hazard)</option>
                             </select>
                         </div>
+
                         <div class="form-group">
                             <label>Landmark / House Address *</label>
                             <input type="text" id="landmark" class="form-control" placeholder="e.g. Near CSMSS Gate 2, House #42" required>
@@ -582,7 +593,7 @@
                     </div>
 
                     <div style="display: flex; gap: 12px;">
-                        <button type="submit" class="btn btn-primary">Submit Grievance</button>
+                        <button type="submit" id="submitBtn" class="btn btn-primary">Submit Grievance</button>
                         <button type="button" class="btn btn-outline" onclick="loadSampleData()">Load Demo Complaint</button>
                     </div>
                 </form>
@@ -664,7 +675,6 @@
 
         <!-- ADMIN PORTAL VIEW -->
         <div id="adminView" class="page-view">
-            <!-- Login State (No Exposed Default Passwords) -->
             <div id="adminLoginForm" class="card" style="max-width: 420px; margin: 3rem auto;">
                 <h3 style="margin-bottom: 0.5rem; font-weight: 800;">Municipal Officer Login</h3>
                 <p class="text-muted" style="margin-bottom: 2rem; font-size: 0.88rem;">Authorized access for Ward Executive Engineers & Maintenance Staff.</p>
@@ -679,7 +689,6 @@
                 <button class="btn btn-primary" style="width: 100%;" onclick="loginAdmin()">Authorize Access</button>
             </div>
 
-            <!-- Detailed Admin Dashboard -->
             <div id="adminDashboard" style="display: none;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                     <div>
@@ -745,10 +754,12 @@
     <script>
         const STORAGE_KEY = 'civicfix_grievance_data';
         let currentAdminID = null;
+        let generatedOTP = null;
+        let isMobileVerified = false;
 
         const defaultGrievances = [
-            { id: 'SEW-2026-1001', name: 'Kedar Khakre', mobile: '9876543210', ward: 'Ward 01 - Kanchanwadi', category: 'Overflowing Sewage Line', severity: 'Emergency', landmark: 'Near CSMSS Main Gate, Lane 3', description: 'Severe sewage overflow spreading across the primary access road. Poses health hazard to students and residents.', status: 'Submitted', remarks: 'Awaiting municipal team assignment.', date: '2026-10-10' },
-            { id: 'SEW-2026-1002', name: 'Digvijay Kolhe', mobile: '9123456789', ward: 'Ward 03 - CIDCO Sector A', category: 'Broken/Missing Manhole Cover', severity: 'High', landmark: 'Opposite Shopping Complex, House #14', description: 'Heavy cast-iron manhole cover broken after rain. Open pit on main street posing immediate accident risk.', status: 'In Progress', remarks: 'Replacement lid dispatched via Ward 3 team.', date: '2026-10-09' }
+            { id: 'SEW-2026-1001', name: 'Kedar Khakre', mobile: '9876543210', ward: 'Ward 01 - Kanchanwadi', category: 'Overflowing Sewage Line', severity: 'Emergency', landmark: 'Near CSMSS Main Gate, Lane 3', description: 'Severe sewage overflow spreading across primary road.', status: 'Submitted', remarks: 'Awaiting team assignment.', date: '2026-10-10' },
+            { id: 'SEW-2026-1002', name: 'Digvijay Kolhe', mobile: '9123456789', ward: 'Ward 03 - CIDCO Sector A', category: 'Broken/Missing Manhole Cover', severity: 'High', landmark: 'Opposite Shopping Complex, House #14', description: 'Open manhole posing severe hazard.', status: 'In Progress', remarks: 'Replacement lid dispatched.', date: '2026-10-09' }
         ];
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -787,8 +798,46 @@
             body.setAttribute('data-theme', newTheme);
         }
 
+        // OTP Generation & Simulation Logic
+        function sendOTP() {
+            const mobile = document.getElementById('citizenMobile').value;
+            if(!mobile || mobile.length !== 10) {
+                alert('Please enter a valid 10-digit mobile number.');
+                return;
+            }
+
+            generatedOTP = Math.floor(1000 + Math.random() * 9000);
+            document.getElementById('otpGroup').style.display = 'flex';
+            const status = document.getElementById('otpStatus');
+            status.style.color = 'var(--primary)';
+            status.innerText = `[DEMO SIMULATION] SMS Sent! Your Verification OTP is: ${generatedOTP}`;
+            alert(`[SIMULATION SMS GATEWAY]\nYour Mobile Verification OTP is: ${generatedOTP}`);
+        }
+
+        function verifyOTP() {
+            const entered = document.getElementById('otpInput').value;
+            const status = document.getElementById('otpStatus');
+
+            if(entered == generatedOTP) {
+                isMobileVerified = true;
+                status.style.color = 'var(--success)';
+                status.innerText = '✓ Mobile number verified successfully!';
+                document.getElementById('citizenMobile').readOnly = true;
+                document.getElementById('otpInput').readOnly = true;
+            } else {
+                status.style.color = 'var(--danger)';
+                status.innerText = '❌ Invalid OTP code. Please try again.';
+            }
+        }
+
         function handleFormSubmit(e) {
             e.preventDefault();
+            
+            if(!isMobileVerified) {
+                alert('Mobile verification required! Please click "Send OTP" and verify your number before submitting.');
+                return;
+            }
+
             const data = getData();
             const newID = 'SEW-2026-' + Math.floor(1000 + Math.random() * 9000);
 
@@ -811,6 +860,10 @@
 
             alert(`Grievance Registered Successfully!\nYour Tracking ID: ${newID}`);
             document.getElementById('grievanceForm').reset();
+            isMobileVerified = false;
+            document.getElementById('otpGroup').style.display = 'none';
+            document.getElementById('citizenMobile').readOnly = false;
+            document.getElementById('otpInput').readOnly = false;
             
             document.getElementById('trackSearchInput').value = newID;
             switchView('trackView', document.querySelectorAll('.nav-btn')[2]);
@@ -825,6 +878,12 @@
             document.getElementById('severityLevel').value = "Emergency";
             document.getElementById('landmark').value = "CSMSS Hostel Block C Road, Plot 12";
             document.getElementById('description').value = "Severe drainage overflow across residential lane leading to foul odor and hygiene risk.";
+            
+            // Auto-bypass OTP for Demo load
+            isMobileVerified = true;
+            document.getElementById('otpGroup').style.display = 'flex';
+            document.getElementById('otpStatus').style.color = 'var(--success)';
+            document.getElementById('otpStatus').innerText = '✓ Mobile verified via demo auto-fill.';
         }
 
         function searchComplaint() {
@@ -895,7 +954,6 @@
             const u = document.getElementById('adminUser').value;
             const p = document.getElementById('adminPass').value;
 
-            // Authentication Credentials
             if ((u === 'admin' && p === 'admin123') || (u === 'officer' && p === 'ward2026')) {
                 localStorage.setItem('civicfix_admin_logged', 'true');
                 showAdminDashboard();
@@ -916,14 +974,13 @@
             renderAdminTable();
         }
 
-        // Detailed Admin Table Renderer
         function renderAdminTable() {
             const data = getData();
             const tbody = document.getElementById('adminTableBody');
             tbody.innerHTML = '';
 
             if(data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No grievance complaints registered in database.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No grievance complaints registered.</td></tr>';
                 return;
             }
 
