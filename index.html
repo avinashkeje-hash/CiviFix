@@ -225,6 +225,7 @@
         .badge-review { background: rgba(2, 132, 199, 0.15); color: #0284c7; border: 1px solid rgba(2, 132, 199, 0.3); }
         .badge-inprogress { background: rgba(99, 102, 241, 0.15); color: #6366f1; border: 1px solid rgba(99, 102, 241, 0.3); }
         .badge-resolved { background: rgba(16, 185, 129, 0.15); color: #059669; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .badge-rejected { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
         .badge-emergency { background: rgba(239, 68, 68, 0.15); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.3); }
 
         .timeline {
@@ -532,7 +533,7 @@
                         </div>
                         <div class="timeline-step" id="step4">
                             <div class="timeline-icon">4</div>
-                            <div style="font-size:0.85rem; font-weight:700;">Resolved</div>
+                            <div style="font-size:0.85rem; font-weight:700;">Resolved / Audited</div>
                         </div>
                     </div>
 
@@ -564,7 +565,7 @@
                             <tr>
                                 <th>Ward Zone</th>
                                 <th>Active Issues</th>
-                                <th>Resolved Issues</th>
+                                <th>Resolved / Audited</th>
                                 <th>Resolution Rate</th>
                             </tr>
                         </thead>
@@ -642,17 +643,18 @@
                     <option value="Under Review">Under Review</option>
                     <option value="In Progress">In Progress</option>
                     <option value="Resolved">Resolved</option>
+                    <option value="Rejected / Invalid">Rejected / Invalid (Audit Flagged)</option>
                 </select>
             </div>
 
             <div class="form-group" style="margin-bottom: 2rem;">
-                <label>Dispatch / Officer Remarks</label>
-                <input type="text" id="modalRemarksInput" class="form-control" placeholder="e.g. Suction vehicle dispatched.">
+                <label>Dispatch / Officer Audit Remarks *</label>
+                <input type="text" id="modalRemarksInput" class="form-control" placeholder="Mandatory notes (e.g., Suction crew dispatched OR Duplicate entry)">
             </div>
 
             <div style="display: flex; gap: 10px; justify-content: flex-end;">
                 <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="saveStatusUpdate()">Save Changes</button>
+                <button class="btn btn-primary" onclick="saveStatusUpdate()">Save Audit Entry</button>
             </div>
         </div>
     </div>
@@ -661,7 +663,7 @@
         // -------------------------------------------------------------
         // FIREBASE CONFIGURATION
         // -------------------------------------------------------------
-       const firebaseConfig = {
+      const firebaseConfig = {
   apiKey: "AIzaSyCVqjytfgbWfMAwjmxFZCUStIGzoJCYDBM",
   authDomain: "civifix-96791.firebaseapp.com",
   projectId: "civifix-96791",
@@ -879,22 +881,28 @@
             document.getElementById('trackResultRemarks').innerText = result.remarks;
 
             const badgeContainer = document.getElementById('trackResultBadge');
-            badgeContainer.innerHTML = `<span class="badge badge-${result.status.toLowerCase().replace(' ', '')}">${result.status}</span>`;
+            const statusClass = result.status.toLowerCase().replace(/[^a-z0-9]/g, '');
+            badgeContainer.innerHTML = `<span class="badge badge-${statusClass}">${result.status}</span>`;
 
             const steps = ['Submitted', 'Under Review', 'In Progress', 'Resolved'];
             const currentIndex = steps.indexOf(result.status);
 
             for (let i = 1; i <= 4; i++) {
                 const stepElem = document.getElementById(`step${i}`);
-                if (i <= currentIndex + 1) stepElem.classList.add('active');
-                else stepElem.classList.remove('active');
+                if (result.status === 'Rejected / Invalid') {
+                    stepElem.classList.remove('active');
+                } else if (i <= currentIndex + 1) {
+                    stepElem.classList.add('active');
+                } else {
+                    stepElem.classList.remove('active');
+                }
             }
         }
 
         function updateMetrics() {
             const data = getData();
             document.getElementById('homeTotalCount').innerText = data.length;
-            const resolved = data.filter(i => i.status === 'Resolved').length;
+            const resolved = data.filter(i => i.status === 'Resolved' || i.status === 'Rejected / Invalid').length;
             document.getElementById('homeResolvedCount').innerText = resolved;
         }
 
@@ -907,7 +915,7 @@
             wards.forEach(ward => {
                 const wardItems = data.filter(i => i.ward === ward);
                 const total = wardItems.length;
-                const resolved = wardItems.filter(i => i.status === 'Resolved').length;
+                const resolved = wardItems.filter(i => i.status === 'Resolved' || i.status === 'Rejected / Invalid').length;
                 const rate = total > 0 ? Math.round((resolved / total) * 100) : 100;
 
                 tbody.innerHTML += `
@@ -923,9 +931,9 @@
 
         function exportCSV() {
             const data = getData();
-            let csv = 'ID,Name,Mobile,Ward,Category,Severity,Status,Date,GPS\n';
+            let csv = 'ID,Name,Mobile,Ward,Category,Severity,Status,Date,GPS,Remarks\n';
             data.forEach(row => {
-                csv += `"${row.id}","${row.name}","${row.mobile}","${row.ward}","${row.category}","${row.severity}","${row.status}","${row.date}","${row.gps}"\n`;
+                csv += `"${row.id}","${row.name}","${row.mobile}","${row.ward}","${row.category}","${row.severity}","${row.status}","${row.date}","${row.gps}","${row.remarks}"\n`;
             });
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
@@ -979,12 +987,13 @@
             }
 
             data.forEach(item => {
+                const badgeClass = item.status.toLowerCase().replace(/[^a-z0-9]/g, '');
                 tbody.innerHTML += `
                     <tr>
                         <td><strong>${item.id}</strong><br><small class="text-muted">${item.date}</small></td>
                         <td><strong>${item.name}</strong><br><span style="color:var(--primary); font-size:0.85rem;">📞 ${item.mobile}</span></td>
                         <td><strong>${item.ward}</strong><br><small class="text-muted">📍 ${item.landmark}</small><br><small style="color:var(--primary);">🗺️ ${item.gps}</small></td>
-                        <td>${item.category}<br><span class="badge ${item.severity === 'Emergency' ? 'badge-emergency' : 'badge-submitted'}" style="margin-top:4px;">${item.severity}</span></td>
+                        <td>${item.category}<br><span class="badge badge-${badgeClass}" style="margin-top:4px;">${item.status}</span></td>
                         <td>
                             <div class="detail-box">
                                 ${item.description}
@@ -995,7 +1004,7 @@
                             <span class="badge badge-review">Target: ${item.targetHours || 24}h</span>
                         </td>
                         <td>
-                            <button class="btn btn-outline" style="padding:6px 12px; font-size:0.8rem;" onclick="openStatusModal('${item.id}')">Update</button>
+                            <button class="btn btn-outline" style="padding:6px 12px; font-size:0.8rem;" onclick="openStatusModal('${item.id}')">Audit / Update</button>
                         </td>
                     </tr>
                 `;
@@ -1014,10 +1023,16 @@
 
         function saveStatusUpdate() {
             const newStatus = document.getElementById('modalStatusSelect').value;
-            const newRemarks = document.getElementById('modalRemarksInput').value || 'Status updated.';
+            const newRemarks = document.getElementById('modalRemarksInput').value.trim();
+
+            if(!newRemarks) {
+                alert('Officer Remarks are mandatory for audit compliance.');
+                return;
+            }
+
             updateStatusInDB(currentAdminID, newStatus, newRemarks);
             closeModal();
-            alert(`Status for ${currentAdminID} updated successfully!`);
+            alert(`Audit entry for ${currentAdminID} recorded successfully!`);
         }
     </script>
 </body>
