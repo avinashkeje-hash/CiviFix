@@ -350,6 +350,9 @@
             border: 1px solid var(--border);
         }
     </style>
+    <!-- Firebase SDK (v9 Compatibility Mode) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
@@ -375,7 +378,7 @@
         <div id="homeView" class="page-view active">
             <div class="hero">
                 <h1>Smart Municipal Sewage & Operations System</h1>
-                <p>An enterprise, offline-first civic intelligence portal featuring automated resolution tracking, GIS location tagging, and multi-ward audit analytics.</p>
+                <p>An enterprise civic intelligence portal featuring real-time multi-device cloud synchronization, GIS location tagging, and multi-ward audit analytics.</p>
                 <div style="display: flex; gap: 1rem; justify-content: center;">
                     <button class="btn btn-primary" style="background: white; color: var(--primary);" onclick="switchView('reportView', document.querySelectorAll('.nav-btn')[1])">Report Overflow Emergency</button>
                     <button class="btn btn-outline" style="color: white; border-color: rgba(255,255,255,0.4);" onclick="switchView('trackView', document.querySelectorAll('.nav-btn')[2])">Track Complaint ID</button>
@@ -550,7 +553,7 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                     <div>
                         <h2 style="font-weight: 800;">Ward-wise Operations & Audit Analytics</h2>
-                        <p class="text-muted" style="font-size: 0.95rem;">Real-time metrics compiled directly from offline browser storage.</p>
+                        <p class="text-muted" style="font-size: 0.95rem;">Real-time metrics compiled directly from cloud synchronization database.</p>
                     </div>
                     <button class="btn btn-success" onclick="exportCSV()">Export Official CSV Audit</button>
                 </div>
@@ -655,10 +658,32 @@
     </div>
 
     <script>
+        // -------------------------------------------------------------
+        // FIREBASE CONFIGURATION
+        // -------------------------------------------------------------
+       const firebaseConfig = {
+  apiKey: "AIzaSyCVqjytfgbWfMAwjmxFZCUStIGzoJCYDBM",
+  authDomain: "civifix-96791.firebaseapp.com",
+  projectId: "civifix-96791",
+  storageBucket: "civifix-96791.firebasestorage.app",
+  messagingSenderId: "440646407407",
+  appId: "1:440646407407:web:fce66651819a172ba4f71a",
+  measurementId: "G-2C61NND2NG"
+};
+        // Initialize Firebase
+        let db = null;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.database();
+        } catch(e) {
+            console.log("Firebase not configured properly. Falling back to LocalStorage.");
+        }
+
         const STORAGE_KEY = 'civicfix_enterprise_data';
         let currentAdminID = null;
         let generatedOTP = null;
         let isMobileVerified = false;
+        let globalGrievances = [];
 
         const defaultGrievances = [
             { id: 'SEW-2026-1001', name: 'Kedar Khakre', mobile: '9876543210', ward: 'Ward 01 - Kanchanwadi', category: 'Overflowing Sewage Line', severity: 'Emergency', landmark: 'Near CSMSS Main Gate, Lane 3', gps: '19.8542 N, 75.3210 E', description: 'Severe sewage overflow spreading across primary road.', status: 'Submitted', remarks: 'Awaiting team assignment.', date: '2026-10-10', targetHours: 12, photo: null },
@@ -666,24 +691,66 @@
         ];
 
         document.addEventListener('DOMContentLoaded', () => {
-            if (!localStorage.getItem(STORAGE_KEY)) {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultGrievances));
+            if (db) {
+                // Real-time Cloud Listener
+                db.ref('grievances').on('value', (snapshot) => {
+                    const val = snapshot.val();
+                    if (val) {
+                        globalGrievances = Object.values(val);
+                    } else {
+                        defaultGrievances.forEach(item => db.ref('grievances/' + item.id).set(item));
+                        globalGrievances = defaultGrievances;
+                    }
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(globalGrievances));
+                    updateUI();
+                });
+            } else {
+                if (!localStorage.getItem(STORAGE_KEY)) {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultGrievances));
+                }
+                globalGrievances = JSON.parse(localStorage.getItem(STORAGE_KEY));
+                updateUI();
             }
-            updateMetrics();
-            renderAnalytics();
+
             if(localStorage.getItem('civicfix_admin_logged') === 'true') {
                 showAdminDashboard();
             }
         });
 
-        function getData() { 
-            return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; 
+        function updateUI() {
+            updateMetrics();
+            renderAnalytics();
+            if(document.getElementById('adminDashboard').style.display !== 'none') {
+                renderAdminTable();
+            }
         }
 
-        function saveData(data) { 
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); 
-            updateMetrics(); 
-            renderAnalytics(); 
+        function getData() { 
+            return globalGrievances; 
+        }
+
+        function saveData(newComplaint) { 
+            if(db) {
+                db.ref('grievances/' + newComplaint.id).set(newComplaint);
+            } else {
+                globalGrievances.unshift(newComplaint);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(globalGrievances));
+                updateUI();
+            }
+        }
+
+        function updateStatusInDB(id, newStatus, newRemarks) {
+            if(db) {
+                db.ref('grievances/' + id).update({ status: newStatus, remarks: newRemarks });
+            } else {
+                const item = globalGrievances.find(i => i.id === id);
+                if(item) {
+                    item.status = newStatus;
+                    item.remarks = newRemarks;
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(globalGrievances));
+                    updateUI();
+                }
+            }
         }
 
         function switchView(viewId, btnElement) {
@@ -734,7 +801,6 @@
             const fileInput = document.getElementById('photoEvidence');
 
             const processSubmit = (photoBase64) => {
-                const data = getData();
                 const newID = 'SEW-2026-' + Math.floor(1000 + Math.random() * 9000);
                 const severity = document.getElementById('severityLevel').value;
                 const targetMap = { 'Emergency': 12, 'High': 24, 'Normal': 48 };
@@ -756,8 +822,7 @@
                     photo: photoBase64
                 };
 
-                data.unshift(newComplaint);
-                saveData(data);
+                saveData(newComplaint);
 
                 alert(`Grievance Registered Successfully!\nTracking ID: ${newID}`);
                 document.getElementById('grievanceForm').reset();
@@ -871,7 +936,7 @@
         }
 
         function backupJSON() {
-            const data = localStorage.getItem(STORAGE_KEY);
+            const data = JSON.stringify(getData());
             const blob = new Blob([data], { type: 'application/json' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -948,16 +1013,11 @@
         }
 
         function saveStatusUpdate() {
-            const data = getData();
-            const item = data.find(i => i.id === currentAdminID);
-            if (item) {
-                item.status = document.getElementById('modalStatusSelect').value;
-                item.remarks = document.getElementById('modalRemarksInput').value || item.remarks;
-                saveData(data);
-                renderAdminTable();
-                closeModal();
-                alert(`Status for ${currentAdminID} updated successfully!`);
-            }
+            const newStatus = document.getElementById('modalStatusSelect').value;
+            const newRemarks = document.getElementById('modalRemarksInput').value || 'Status updated.';
+            updateStatusInDB(currentAdminID, newStatus, newRemarks);
+            closeModal();
+            alert(`Status for ${currentAdminID} updated successfully!`);
         }
     </script>
 </body>
